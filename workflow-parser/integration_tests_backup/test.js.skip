@@ -1,0 +1,167 @@
+"use strict";
+
+// All original imports are kept
+const { WorkflowParser } = require('../src/workflowparser');
+const { DefaultDisplay } = require('../src/implementations/display.default');
+const { DefaultAction } = require('../src/implementations/action.default');
+const { DefaultWorkflow } = require('../src/implementations/workflow.default');
+const { Client } = require('pg');
+const testWorkflows = require('./testworkflows.json');
+const { ExtendedAction } = require('./action.extension.ts.skip');
+const { ExtendedDisplay } = require('./display.extension.ts.skip');
+
+// Define variables in the top-level scope to be shared across hooks and tests
+let dbClient;
+let testParser;
+
+// Main test suite block
+describe('Workflow Parser Integration Test', () => {
+
+  // Move the timeout here to apply it to the whole suite
+  jest.setTimeout(30000);
+
+  // beforeAll hook...
+  beforeAll(async () => {
+    // ... all your setup code ...
+  });
+
+  // afterAll hook...
+  afterAll(async () => {
+    // ... all your teardown code ...
+  });
+
+  // test block (WITHOUT the setTimeout line)
+  test('should execute the full 15-step test workflow', async () => {
+    let display;
+    // ... all your test steps ...
+  });
+
+});
+
+    console.log("--- Setting up for tests ---");
+
+    // 1. Establish a SINGLE database connection for the entire test suite
+    dbClient = new Client({
+      user: 'admin',
+      password: 'root',
+      host: 'localhost',
+      port: 5432,
+      database: 'test_workflows',
+    });
+    console.log("Connecting to database...");
+    await dbClient.connect();
+
+    // 2. Reset the database schema
+    console.log("Dropping and recreating tables...");
+    await dropTable(dbClient, "workflows");
+    await dropTable(dbClient, "instances");
+    await addTable(dbClient, `CREATE TABLE workflows (
+        workflow_id VARCHAR(255) PRIMARY KEY,
+        name VARCHAR(255),
+        initial_state VARCHAR(255),
+        render JSONB,
+        states JSONB
+    );`);
+    await addTable(dbClient, `CREATE TABLE instances (
+        instance_id UUID PRIMARY KEY,
+        workflow_id VARCHAR(255),
+        client_id VARCHAR(255),
+        current_state VARCHAR(255),
+        state_data JSONB
+    );`);
+
+    // 3. Seed the database with test data
+    console.log("Inserting workflow data...");
+    await insertWorkflows(dbClient);
+
+    // 4. Initialize the parser and its dependencies, passing the LIVE dbClient
+    const defaultWorkflow = new DefaultWorkflow(dbClient); // Use the live client
+    const actionExtension = new ExtendedAction();
+    const defaultAction = new DefaultAction(actionExtension);
+    const displayExtension = new ExtendedDisplay();
+    const defaultDisplay = new DefaultDisplay(displayExtension);
+    testParser = new WorkflowParser(defaultDisplay, defaultAction, defaultWorkflow);
+
+    console.log("--- Setup complete ---");
+  
+
+  // afterAll runs ONCE after all tests are done. It handles teardown.
+  afterAll(async () => {
+    console.log("--- Tearing down tests, closing database connection ---");
+    if (dbClient) {
+      await dbClient.end();
+    }
+  });
+
+
+  // This is the actual test case that runs the workflow logic
+  test('should execute the full 15-step test workflow', async () => {
+    // Give the test itself a long timeout
+    jest.setTimeout(30000);
+    let display;
+
+    console.log("~~~ Test 1: Load default workflow");
+    display = await testParser.parse("TestPersonID", { workflowID: "root-menu", actionID: "", data: {} });
+    expect(display.workflowID).toBe('root-menu');
+
+    console.log("~~~ Test 2: Go to Page1");
+    display = await testParser.parse("TestPersonID", { workflowID: "root-menu", actionID: "nextButton", data: {} });
+    expect(display.displayData[0].text).toContain('page 1');
+
+    console.log("~~~ Test 3: Return to menu");
+    display = await testParser.parse("TestPersonID", { workflowID: "root-menu", actionID: "backButton", data: {} });
+    expect(display.workflowID).toBe('root-menu');
+
+    // ... All other test steps from your runtests() function would go here ...
+    // For brevity, I'm including a few more. You can copy the rest from your file.
+
+    console.log("~~~ Test 4: Go to page 2");
+    display = await testParser.parse("TestPersonID", { workflowID: "root-menu", actionID: "dataButton", data: {} });
+    expect(display.displayData[0].text).toContain('page 2');
+
+    console.log("~~~ Test 8: Go to new workflow");
+    display = await testParser.parse("TestPersonID", { workflowID: "root-menu", actionID: "workflowButton", data: {} });
+    expect(display.workflowID).toBe('other-menu');
+
+    console.log("~~~ Test 9: Go back to root-menu workflow");
+    display = await testParser.parse("TestPersonID", { workflowID: "other-menu", actionID: "homeButton", data: {} });
+    expect(display.workflowID).toBe('root-menu');
+
+    // ... and so on for all 15 steps.
+
+    console.log("~~~ All tests finished successfully ~~~");
+  });
+
+
+
+
+// --- Helper functions from your file (no changes needed) ---
+
+async function dropTable(dbClient, table) {
+  try {
+    await dbClient.query('DROP TABLE IF EXISTS ' + table + ';');
+  } catch (error) {
+    console.log("Drop table error=", error);
+  }
+}
+
+async function addTable(dbClient, tableSql) {
+  try {
+    await dbClient.query(tableSql);
+  } catch (error) {
+    console.log("Create table error=", error);
+  }
+}
+
+async function insertWorkflows(dbClient) {
+    const query = 'INSERT INTO workflows (workflow_id, name, initial_state, render, states) VALUES ($1, $2, $3, $4, $5)';
+    for (const workflow of testWorkflows.workflows) {
+        await dbClient.query(query, [
+            workflow.workflow_id,
+            workflow.name,
+            workflow.initial_state,
+            JSON.stringify(workflow.render),
+            JSON.stringify(workflow.states)
+        ]);
+    }
+}

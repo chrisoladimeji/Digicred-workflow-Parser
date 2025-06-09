@@ -1,0 +1,237 @@
+{
+    "workflows": [
+        {
+            "name": "Test Workflow Display Name",
+            "workflow_id": "root-menu",
+            "initial_state": "menu",
+            "render": [
+                { }
+            ],
+            "states": [
+                {
+                    "name": "Test Workflow menu",
+                    "state_id": "menu",
+                    "display_data": [
+                        {
+                            "type": "image",
+                            "url": "http://image.com/image.png"
+                        },
+                        {
+                            "type": "text",
+                            "display": "title",
+                            "text": "This is the test for workflow"
+                        },
+                        {
+                            "type": "text",
+                            "text": "First time showing this page",
+                            "condition": "instance?.state_data?.first==undefined"
+                        },
+                        {
+                            "type": "button",
+                            "text": "Next button",
+                            "action_id": "nextButton"
+                        },
+                        {
+                            "type": "button",
+                            "text": "Data button",
+                            "action_id": "dataButton"
+                        },
+                        {
+                            "type": "button",
+                            "text": "Workflow button",
+                            "action_id": "workflowButton"
+                        }
+                    ],
+                    "actions": [
+                        {
+                            "action_id": "nextButton",
+                            "type": "saveData",
+                            "condition": "true",
+                            "value": {"first": true }
+                        }                        
+                    ],
+                    "transitions": [
+                        {
+                            "transition_id": "nextButton",
+                            "type": "stateTransition",
+                            "state_id": "page1",
+                            "workflow_id": "",
+                            "condition": "actionInput.actionID=='nextButton'"
+                        },
+                        {
+                            "transition_id": "dataButton",
+                            "type": "stateTransition",
+                            "state_id": "page2",
+                            "workflow_id": "",
+                            "condition": "actionInput.actionID=='dataButton'"
+                        }
+                    ]
+                },
+                {
+                    "name": "Test Workflow page 1",
+                    "state_id": "page1",
+                    "display_data": [
+                        {
+                            "type": "text",
+                            "text": "This is the page for testing state transitions."
+                        },
+                        {
+                            "type": "button",
+                            "text": "Go back",
+                            "action_id": "backButton"
+                        }
+                    ],
+                    "actions": [
+                    ],
+                    "transitions": [
+                        {
+                            "transition_id": "backButton",
+                            "type": "stateTransition",
+                            "state_id": "menu",
+                            "workflow_id": "",
+                            "condition": "actionInput.actionID=='backButton'"
+                        }
+                    ]
+                },
+                {
+                    "name": "Test Workflow page 2 data test",
+                    "state_id": "page2",
+                    "display_data": [
+                        {
+                            "type": "text",
+                            "display": "title",
+                            "text": "This is the page for testing data."
+                        },
+                        {
+                            "type": "text",
+                            "text": "Date={Date}",
+                            "condition": "instance?.state_data?.Date!=undefined"
+                        },
+                        {
+                            "type": "extended",
+                            "text": "Extended text"
+                        },
+                        {
+                            "type": "button",
+                            "text": "Save Data",
+                            "action_id": "saveButton"
+                        },
+                        {
+                            "type": "button",
+                            "text": "State Data",
+                            "action_id": "stateButton"
+                        },
+                        {
+                            "type": "button",
+                            "text": "Extension",
+                            "action_id": "extensionButton"
+                        },
+                        {
+                            "form": "Save Form",
+                            "type": "text-field",
+                            "label": "Field one",
+                            "value": "{save-field}",
+                            "form-id": "save-field"
+                        },                        
+                        {
+                            "form": "Save Form",
+                            "type": "text-field",
+                            "label": "Field two",
+                            "value": "{Date}",
+                            "form-id": "save-field2"
+                        },                        
+                        {
+                            "type": "button",
+                            "text": "Go back",
+                            "action_id": "backButton"
+                        }
+                    ],
+                    "actions": [
+                        {
+                            "action_id": "stateButton",
+                            "type": "stateData",
+                            "condition": "true",
+                            "value": "action.data"
+                        },
+                        {
+                            "action_id": "extensionButton",
+                            "type": "extension",
+                            "condition": "true",
+                            "value": {"extended": true }
+                        },
+                        {
+                            "action_id": "saveButton",
+                            "type": "saveData",
+                            "condition": "true",
+                            "value": {"data": "Hello"}
+                        }
+                    ],
+                    "transitions": [
+                        {
+                            "transition_id": "backButton",
+                            "type": "stateTransition",
+                            "state_id": "menu",
+                            "workflow_id": "",
+                            "condition": "actionInput.actionID=='backButton'"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Test Other Workflow ",
+            "workflow_id": "other-menu",
+            "initial_state": "menu2",
+            "render": [
+                { }
+            ],
+            "states": [
+                {
+                    "name": "Test Other Workflow menu",
+                    "state_id": "menu2",
+                    "display_data": [
+                        {
+                            "type": "title",
+                            "text": "This is the other test workflow."
+                        },
+                        {
+                            "type": "button",
+                            "text": "Go home workflow",
+                            "action_id": "homeButton"
+                        },
+                        {
+                            "type": "button",
+                            "text": "No action button",
+                            "action_id": "noactionButton"
+                        }
+
+                    ],
+                    "actions": [
+                        {
+                            "action_id": "homeButton",
+                            "type": "workflowTransition",
+                            "condition": "true",
+                            "value": "root-menu"
+                        }
+                    ],
+                    "transitions": [
+                        {
+                            "transition_id": "homeButton",
+                            "type": "workflowTransition",
+                            "state_id": "",
+                            "workflow_id": "root-menu",
+                            "condition": "actionInput.actionID=='homeButton'"
+                        },
+                        {
+                            "transition_id": "noactionButton",
+                            "type": "workflowTransition",
+                            "state_id": "",
+                            "workflow_id": "root-menu",
+                            "condition": "actionInput.actionID=='noactionButton'"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

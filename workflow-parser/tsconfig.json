@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "esModuleInterop": true,
+        "target": "es6",
+        "rootDir": "./src",                                  /* Specify the root folder within your source files. */
+        "outDir": "./dist",  
+        "moduleResolution": "node",
+        "sourceMap": true,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "strictPropertyInitialization": false,
+        "resolveJsonModule": true,
+        "declaration": true
+    },
+    "include": ["src/**/*", "./src/index.d.ts"],
+    "lib": ["es2015"]
+  }
