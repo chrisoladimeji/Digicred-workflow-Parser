@@ -39,10 +39,10 @@ jobs:
         if: always()
         uses: slackapi/slack-github-action@v1.24.0
         with:
-          payload: |
+          channel-id: "C08D8UKMQVD"
+          slack-message: |
             {
-              "channel": "C08D8UKMQVD",
-              "text": "*CI Test and Notify* completed with status: `${{ job.status }}`"
+              "text": "*CI Test and Notify* completed with status: '${{ job.status }}'"
             }
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
