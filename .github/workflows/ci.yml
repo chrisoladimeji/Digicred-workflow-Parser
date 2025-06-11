@@ -21,19 +21,23 @@ jobs:
           node-version: '20'
 
       - name: Start Dependent Services
-        run: docker-compose -f workflow-parser/test/docker-compose.yml up -d
+        run: docker-compose -f test/docker-compose.yml up -d
+        working-directory: workflow-parser
 
       - name: Install Dependencies
         run: yarn install
+        working-directory: workflow-parser
 
       - name: Run Jest Tests
         run: yarn test
+        working-directory: workflow-parser
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
       - name: Stop Services
         if: always()
-        run: docker-compose -f workflow-parser/test/docker-compose.yml down
+        run: docker-compose -f test/docker-compose.yml down
+        working-directory: workflow-parser
 
       - name: Notify Slack of Job Status
         if: always()
