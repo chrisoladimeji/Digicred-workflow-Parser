@@ -42,7 +42,7 @@ jobs:
         with:
           payload: |
             {
-              "channel": "#digicred-Test",
+              "channel": "C08D8UKMQVD",
               "text": "*CI Test and Notify* completed with status: `${{ job.status }}`"
             }
         env:
