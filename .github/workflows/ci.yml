@@ -21,7 +21,7 @@ jobs:
           node-version: '20'
 
       - name: Start Dependent Services
-        run: docker-compose up -d
+        run: docker-compose -f workflow-parser/test/docker-compose.yml up -d
 
       - name: Install Dependencies
         run: yarn install
@@ -30,9 +30,19 @@ jobs:
         run: yarn test
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-          SLACK_CHANNEL: 'digicred-Test'
 
       - name: Stop Services
         if: always()
-        run: docker-compose down
+        run: docker-compose -f workflow-parser/test/docker-compose.yml down
 
+      - name: Notify Slack of Job Status
+        if: always()
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "channel": "C08D8UKMQVD",
+              "text": "*CI Test and Notify* completed with status: `${{ job.status }}`"
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
